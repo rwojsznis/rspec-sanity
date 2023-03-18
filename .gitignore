@@ -1,0 +1,9 @@
+.env
+.rspec-sanity.toml
+Gemfile
+Gemfile.lock
+spec/
+rspec-sanity
+bin/
+
+dist/
