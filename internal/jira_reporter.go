@@ -42,6 +42,10 @@ func (jr *JiraReporter) Init() error {
 	return nil
 }
 
+func (jr *JiraReporter) Verify() error {
+	return nil
+}
+
 func (jr *JiraReporter) ReportFlaky(flakies []RspecExample) error {
 	issueTitle := flakies[0].Filename()
 

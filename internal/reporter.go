@@ -3,6 +3,7 @@ package internal
 type Reporter interface {
 	Init() error
 	ReportFlaky([]RspecExample) error
+	Verify() error
 }
 
 func ReportFlakies(reporter Reporter, flakies []RspecExample) error {

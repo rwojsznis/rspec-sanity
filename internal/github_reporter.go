@@ -32,6 +32,29 @@ func (gr *GithubReporter) Init() error {
 	return nil
 }
 
+func (gr *GithubReporter) Verify() error {
+	log.Println("[github] Verifying reporter")
+
+	testFlakies := []RspecExample{
+		{Id: "some/test-example.rb:1:2"},
+		{Id: "some/test-example.rb:10:2"},
+	}
+	template, err := RenderTemplate(gr.config.Template, testFlakies)
+	if err != nil {
+		return err
+	}
+
+	issue, err := gr._createIssue("Test Issue", template, gr.config.Labels)
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[github] Created test issue: %s", *issue.HTMLURL)
+	
+	return nil
+}
+
 func (gr *GithubReporter) ReportFlaky(flakies []RspecExample) error {
 	issueTitle := flakies[0].Filename()
 	query := fmt.Sprintf("\"%s\" in:title repo:%s/%s is:issue",
@@ -102,14 +125,24 @@ func (gr *GithubReporter) createIssue(flakies []RspecExample) error {
 		return err
 	}
 
-	labels := gr.config.Labels
+	issue, err := gr._createIssue(flakies[0].Filename(), body, gr.config.Labels)
 
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[github] Created new issue: %s", *issue.Title)
+
+	return nil
+}
+
+func (gr *GithubReporter) _createIssue(title string, body string, labels []string) (*github.Issue, error) {
 	if len(labels) == 0 {
 		labels = make([]string, 0)
 	}
 
 	issue := &github.IssueRequest{
-		Title:  github.String(flakies[0].Filename()),
+		Title:  github.String(title),
 		Body:   github.String(body),
 		Labels: &labels,
 	}
@@ -121,11 +154,5 @@ func (gr *GithubReporter) createIssue(flakies []RspecExample) error {
 		issue,
 	)
 
-	if err != nil {
-		return err
-	}
-
-	log.Printf("[github] Created new issue: %s", *newIssue.Title)
-
-	return err
+	return newIssue, err
 }

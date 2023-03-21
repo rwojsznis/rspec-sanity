@@ -64,7 +64,7 @@ func (c *Config) GetReporter() Reporter {
 	} else if c.Jira != nil {
 		return NewJiraReporter(c.Jira)
 	} else {
-		return nil
+		return &NullReporter{}
 	}
 }
 
