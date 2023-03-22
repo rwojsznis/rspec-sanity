@@ -7,7 +7,6 @@ builds:
     goos:
       - linux
       - darwin
-
 archives:
   - format: tar.gz
     name_template: >-
