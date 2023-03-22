@@ -43,6 +43,24 @@ func (jr *JiraReporter) Init() error {
 }
 
 func (jr *JiraReporter) Verify() error {
+	log.Println("[jira] Verifying reporter")
+	testFlakies := []RspecExample{
+		{Id: "some/test-example.rb:1:2"},
+		{Id: "some/test-example.rb:10:2"},
+	}
+	template, err := RenderTemplate(jr.config.Template, testFlakies)
+	if err != nil {
+		return err
+	}
+
+	issue, err := jr._createIssue("Test Issue", template, jr.config.Labels)
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[jira] Created test issue: %s/browse/%s", jr.config.host, issue.Key)
+
 	return nil
 }
 
@@ -132,8 +150,22 @@ func (jr *JiraReporter) createIssue(flakies []RspecExample) error {
 		return err
 	}
 
-	labels := jr.config.Labels
+	newIssue, err := jr._createIssue(
+		flakies[0].Filename(),
+		body,
+		jr.config.Labels,
+	)
 
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[jira] Created new issue: %s", newIssue.Key)
+
+	return nil
+}
+
+func (jr *JiraReporter) _createIssue(title string, body string, labels []string) (*jira.Issue, error) {
 	if len(labels) == 0 {
 		labels = make([]string, 0)
 	}
@@ -148,7 +180,7 @@ func (jr *JiraReporter) createIssue(flakies []RspecExample) error {
 				Key: jr.config.ProjectId,
 			},
 			Parent:  &jira.Parent{Key: jr.config.EpicId},
-			Summary: flakies[0].Filename(),
+			Summary: title,
 			Labels:  labels,
 		},
 	}
@@ -158,11 +190,5 @@ func (jr *JiraReporter) createIssue(flakies []RspecExample) error {
 		&issue,
 	)
 
-	if err != nil {
-		return err
-	}
-
-	log.Printf("[jira] Created new issue: %s", newIssue.Key)
-
-	return nil
+	return newIssue, err
 }
