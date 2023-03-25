@@ -1,6 +1,6 @@
 # rspec-sanity
 
-Flaky tests reporter that wraps your `rspec` call designed for the CI systems.
+Flaky tests reporter that wraps your `rspec` call designed for the CI systems. [See this repo for fully-working example](https://github.com/rwojsznis/rspec-sanity-example/).
 
 ### Motivation
 
@@ -8,7 +8,7 @@ Create opinionated statically typed wrapper on top of `rspec` instead of creatin
 
 ### Status
 
-Early PoC. Very little tests and terrible code quality. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
+Early (working) PoC. Very little tests and terrible code quality. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
 
 ### How to use it?
 
