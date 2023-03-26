@@ -16,7 +16,6 @@ func TestLoadConfig(t *testing.T) {
 
 	tempFile, err := ioutil.TempFile("", "config")
 	assert.NoError(t, err)
-
 	defer os.Remove(tempFile.Name())
 
 	data := `
@@ -34,6 +33,18 @@ persistence_file = "spec/examples.txt"
 	assert.Equal(t, "--format documentation --force-color", config.Arguments)
 	assert.Equal(t, "--format progress", config.RerunArguments)
 	assert.Equal(t, "spec/examples.txt", config.PersistenceFile)
+}
+
+func TestGetReporter(t *testing.T) {
+	config := Config{}
+	assert.Equal(t, &NullReporter{}, config.GetReporter())
+
+	config.Github = &GithubConfig{}
+	assert.Equal(t, NewGithubReporter(config.Github), config.GetReporter())
+
+	config.Github = nil
+	config.Jira = &JiraConfig{}
+	assert.Equal(t, NewJiraReporter(config.Jira), config.GetReporter())
 }
 
 func TestRunCommand(t *testing.T) {
@@ -58,6 +69,34 @@ func TestRunCommand(t *testing.T) {
 		"rspec spec/lib spec/models",
 		config.RunCommand([]string{"spec/lib spec/models"}),
 	)
+}
+
+func TestCollectExamples(t *testing.T) {
+	tempFile, err := ioutil.TempFile("", "config")
+	assert.NoError(t, err)
+	defer os.Remove(tempFile.Name())
+
+data := `example_id                       | status | run_time        |
+-------------------------------- | ------ | --------------- |
+./spec/flaky_spec.rb[1:1]        | passed | 0.00051 seconds |
+./spec/flaky_spec.rb[1:2]        | passed | 0.00005 seconds |
+./spec/flaky_spec.rb[1:3]        | passed | 0.00004 seconds |
+./spec/new_flaky_spec.rb[1:1]    | failed | 0.00004 seconds |
+
+`
+	_, err = tempFile.Write([]byte(data))
+	assert.NoError(t, err)
+
+	config := Config{PersistenceFile: tempFile.Name()}
+
+	examples, err := config.CollectExamples()
+	assert.NoError(t, err)
+	assert.Equal(t, 4, len(examples))
+
+	assert.Equal(t, "./spec/flaky_spec.rb[1:1]", examples[0].Id)
+	assert.Equal(t, "passed", examples[1].Status)
+	assert.Equal(t, "./spec/new_flaky_spec.rb[1:1]", examples[3].Id)
+	assert.Equal(t, "failed", examples[3].Status)
 }
 
 func TestRerunCommand(t *testing.T) {
