@@ -55,6 +55,13 @@ func (r *Runner) Run() RunnerResult {
 		command = r.Settings.Config.RerunCommand(r.Settings.Pattern)
 		status, err = r.exec(command, 2)
 
+		if err != nil {
+			return RunnerResult{
+				StatusCode: status,
+				Error:      err,
+			}
+		}
+
 		examplesSecondRun, err := r.Settings.Config.CollectExamples()
 		flakies := FindFlakies(examplesFirstRun, examplesSecondRun)
 

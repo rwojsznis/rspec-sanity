@@ -5,5 +5,5 @@ Gemfile.lock
 spec/
 rspec-sanity
 bin/
-
 dist/
+coverage.*
