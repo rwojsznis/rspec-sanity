@@ -27,9 +27,10 @@ func (m *MockReporter) Verify() error {
 
 func TestReportFlakies(t *testing.T) {
 	reporter := &MockReporter{}
-	reporter.Init()
+	err := reporter.Init()
+	assert.NoError(t, err)
 
-	err := ReportFlakies(reporter, []RspecExample{
+	err = ReportFlakies(reporter, []RspecExample{
 		{Id: "./spec/flaky_spec.rb[1:1]"},
 		{Id: "./spec/flaky_spec.rb[1:2]"},
 		{Id: "./spec/flaky_spec.rb[1:3]"},

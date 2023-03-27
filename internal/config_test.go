@@ -35,6 +35,91 @@ persistence_file = "spec/examples.txt"
 	assert.Equal(t, "spec/examples.txt", config.PersistenceFile)
 }
 
+func TestLoadConfigWithGithub(t *testing.T) {
+	tempFile, err := ioutil.TempFile("", "config")
+	assert.NoError(t, err)
+	defer os.Remove(tempFile.Name())
+
+	data := `
+command = "bundle exec rspec"
+arguments = "--format documentation --force-color"
+rerun_arguments = "--format progress"
+persistence_file = "spec/examples.txt"
+
+[github]
+owner = "jdoe"
+repo = "rspec-sanity"
+labels = ['flaky-spec']
+template = 'template string'
+`
+
+	_, err = tempFile.Write([]byte(data))
+	assert.NoError(t, err)
+
+	originalToken := os.Getenv("RSPEC_SANITY_GITHUB_TOKEN")
+	os.Setenv("RSPEC_SANITY_GITHUB_TOKEN", "my-gh-token")
+
+	defer func() {
+		os.Setenv("RSPEC_SANITY_GITHUB_TOKEN", originalToken)
+	}()
+
+	config, err := LoadConfig(tempFile.Name())
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"flaky-spec"}, config.Github.Labels)
+	assert.Equal(t, "template string", config.Github.Template)
+	assert.Equal(t, "my-gh-token", config.Github.GetToken())
+	assert.Equal(t, "jdoe", config.Github.Owner)
+	assert.Equal(t, "rspec-sanity", config.Github.Repo)
+}
+
+func TestLoadConfigWithJira(t *testing.T) {
+	tempFile, err := ioutil.TempFile("", "config")
+	assert.NoError(t, err)
+	defer os.Remove(tempFile.Name())
+
+	data := `
+command = "bundle exec rspec"
+arguments = "--format documentation --force-color"
+rerun_arguments = "--format progress"
+persistence_file = "spec/examples.txt"
+
+[jira]
+epic_id = "PROD-1"
+task_type_id = "10001"
+project_id = "PROD"
+labels = ['flaky-spec-label']
+template = 'template string'
+`
+
+	_, err = tempFile.Write([]byte(data))
+	assert.NoError(t, err)
+
+	originalToken := os.Getenv("RSPEC_SANITY_JIRA_TOKEN")
+	originalUser := os.Getenv("RSPEC_SANITY_JIRA_USER")
+	orginalHost := os.Getenv("RSPEC_SANITY_JIRA_HOST")
+
+	os.Setenv("RSPEC_SANITY_JIRA_TOKEN", "my-jira-token")
+	os.Setenv("RSPEC_SANITY_JIRA_USER", "my-jira-user")
+	os.Setenv("RSPEC_SANITY_JIRA_HOST", "my-jira-host")
+
+	defer func() {
+		os.Setenv("RSPEC_SANITY_JIRA_TOKEN", originalToken)
+		os.Setenv("RSPEC_SANITY_JIRA_USER", originalUser)
+		os.Setenv("RSPEC_SANITY_JIRA_HOST", orginalHost)
+	}()
+
+	config, err := LoadConfig(tempFile.Name())
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"flaky-spec-label"}, config.Jira.Labels)
+	assert.Equal(t, "template string", config.Jira.Template)
+	assert.Equal(t, "my-jira-token", config.Jira.GetToken())
+	assert.Equal(t, "my-jira-user", config.Jira.GetUser())
+	assert.Equal(t, "my-jira-host", config.Jira.GetHost())
+	assert.Equal(t, "PROD-1", config.Jira.EpicId)
+	assert.Equal(t, "10001", config.Jira.TaskTypeId)
+	assert.Equal(t, "PROD", config.Jira.ProjectId)
+}
+
 func TestGetReporter(t *testing.T) {
 	config := Config{}
 	assert.Equal(t, &NullReporter{}, config.GetReporter())
@@ -76,7 +161,7 @@ func TestCollectExamples(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.Remove(tempFile.Name())
 
-data := `example_id                       | status | run_time        |
+	data := `example_id                       | status | run_time        |
 -------------------------------- | ------ | --------------- |
 ./spec/flaky_spec.rb[1:1]        | passed | 0.00051 seconds |
 ./spec/flaky_spec.rb[1:2]        | passed | 0.00005 seconds |
