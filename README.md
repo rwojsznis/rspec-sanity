@@ -8,7 +8,7 @@ Create opinionated statically typed wrapper on top of `rspec` instead of creatin
 
 ### Status
 
-Early (working) PoC. Very little tests and terrible code quality. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
+Working proof of concept. Some tests and terrible code quality. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
 
 ### How to use it?
 
@@ -83,12 +83,18 @@ Branch: {{ .Env.CIRCLE_BRANCH }}
 
 ### Additional configuration per reporter
 
+#### Github
+
 To authorize with Github you need to setup `RSPEC_SANITY_GITHUB_TOKEN` - [it can be a personal token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) or newly [introduced fine-grained token](https://github.blog/2022-10-18-introducing-fine-grained-personal-access-tokens-for-github/) - just make you you have access to **write** issues.
 
+
+### JIRA
 To authorize with JIRA you need to setup few more things:
 
 - `RSPEC_SANITY_JIRA_TOKEN` - jira [personal access token](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html) - I recommend creating a dedicated JIRA user for this purposes
 - `RSPEC_SANITY_JIRA_USER` - email address of token owner
 - `RSPEC_SANITY_JIRA_HOST` - your jira instance address, with protocol (`https://`)
+
+#### Creating a test issue
 
 To check your configuration you can run `rspec-sanity verify`.
