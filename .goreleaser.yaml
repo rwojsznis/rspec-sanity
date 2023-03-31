@@ -26,3 +26,13 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+nfpms:
+  - maintainer: 'Rafal Wojsznis <rafal.wojsznis@gmail.com>'
+  - id: packages
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+publishers:
+  - name: fury.io
+    ids:
+      - packages
+    dir: "{{ dir .ArtifactPath }}"
+    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/rspec-sanity/
