@@ -30,6 +30,9 @@ nfpms:
   - id: packages
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     maintainer: 'Rafal Wojsznis <rafal.wojsznis@gmail.com>'
+    formats:
+      - deb
+      - rpm
 publishers:
   - name: fury.io
     ids:
