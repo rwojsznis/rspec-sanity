@@ -27,9 +27,9 @@ changelog:
       - '^docs:'
       - '^test:'
 nfpms:
-  - maintainer: 'Rafal Wojsznis <rafal.wojsznis@gmail.com>'
   - id: packages
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    maintainer: 'Rafal Wojsznis <rafal.wojsznis@gmail.com>'
 publishers:
   - name: fury.io
     ids:
