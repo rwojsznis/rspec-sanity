@@ -7,3 +7,4 @@ rspec-sanity
 bin/
 dist/
 coverage.*
+vendor/
