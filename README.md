@@ -8,7 +8,7 @@ Create an opinionated statically typed wrapper on top of `rspec` instead of crea
 
 ### Status
 
-A working proof of concept. Some tests and terrible code quality - but gets the job done. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
+In working state, battle tested on few projects - _gets the job done_. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
 
 ### How to use it?
 
@@ -53,6 +53,10 @@ owner = "rwojsznis"
 repo = "rspec-sanity"
 # optional labels
 labels = ['flaky-spec']
+
+# reopen GH issue if it was closed when adding new report?
+reopen = true
+
 # Under .Env you will find all available env variables on the system
 # Here I'm using some handy stuff defined by CircleCI
 template = '''

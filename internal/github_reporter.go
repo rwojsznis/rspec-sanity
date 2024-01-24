@@ -116,6 +116,22 @@ func (gr *GithubReporter) addIssueComment(issue *github.Issue, flakies []RspecEx
 		return err
 	}
 
+	if gr.config.Reopen && *issue.State == *github.String("closed") {
+		_, _, err = gr.client.Issues.Edit(
+			context.Background(),
+			gr.config.Owner,
+			gr.config.Repo,
+			*issue.Number,
+			&github.IssueRequest{
+				State: github.String("open"),
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

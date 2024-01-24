@@ -10,6 +10,7 @@ type GithubConfig struct {
 	Repo string `toml:"repo,omitempty"`
 	Template string `toml:"template,omitempty"`
 	Labels []string `toml:"labels,omitempty"`
+	Reopen bool `toml:"reopen,omitempty"`
 	token string
 }
 
