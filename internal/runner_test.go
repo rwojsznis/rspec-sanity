@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
@@ -26,11 +25,11 @@ func TestRunnerFirstRun(t *testing.T) {
 }
 
 func TestRunnerSecondRun(t *testing.T) {
-	tempFile, err := ioutil.TempFile("", "config")
+	tempFile, err := os.CreateTemp("", "config")
 	assert.NoError(t, err)
 	defer os.Remove(tempFile.Name())
 
-	scriptFile, err := ioutil.TempFile("", "script")
+	scriptFile, err := os.CreateTemp("", "script")
 	assert.NoError(t, err)
 	defer os.Remove(scriptFile.Name())
 
