@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
-	golang.org/x/oauth2 v0.20.0
+	golang.org/x/oauth2 v0.21.0
 )
 
 require (
