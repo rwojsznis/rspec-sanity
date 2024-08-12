@@ -3,7 +3,7 @@ module github.com/rwojsznis/rspec-sanity
 go 1.21
 
 require (
-	github.com/urfave/cli/v2 v2.27.3
+	github.com/urfave/cli/v2 v2.27.4
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 	golang.org/x/oauth2 v0.22.0
 )
