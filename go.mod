@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/andygrunwald/go-jira/v2 v2.0.0-20240116150243-50d59fe116d6
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
