@@ -1,6 +1,6 @@
 module github.com/rwojsznis/rspec-sanity
 
-go 1.25.5
+go 1.26.1
 
 require (
 	github.com/urfave/cli/v2 v2.27.7
