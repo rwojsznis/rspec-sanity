@@ -8,7 +8,7 @@ Create an opinionated statically typed wrapper on top of `rspec` instead of crea
 
 ### Status
 
-In working state, battle tested on few projects - _gets the job done_. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported).
+In working state, battle tested on few projects - _gets the job done_. Supports Github Issues and JIRA (with strong assumptions about how flakies are reported). Managed to resolve every single flaky spec as part of one contract - [see blogpost here](https://wojsznis.eu/blog/2026/06/13/zero-flaky-test-zft-tm-project/).
 
 ### How to use it?
 
@@ -112,10 +112,3 @@ To authorize with JIRA you need to set following ENV variables:
 #### Creating a test issue
 
 To check your configuration you run `rspec-sanity verify`.
-
-### Todos / nice to haves
-
-- proper interfaces for better tests
-- Github-related tests [with go-github-mock](https://github.com/migueleliasweb/go-github-mock)
-- uploading artifacts associated with flaky tests (eg. screenshots captured with [capybara-screenshot](https://github.com/mattheworiordan/capybara-screenshot))
-- auto-generating `bisect` command for flaky test replication attempt (we would have to grab used rspec seed)
