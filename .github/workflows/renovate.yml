@@ -1,0 +1,35 @@
+name: Renovate
+
+on:
+  schedule:
+    # Every day at 07:00 UTC.
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Dry run (no PRs or branches created)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Renovate
+        uses: renovatebot/github-action@5402b206248e5a8c8427a15102702eb9c1793efc # v46.2.4
+        with:
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          LOG_LEVEL: info
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun && 'full' || null }}
