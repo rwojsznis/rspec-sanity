@@ -127,6 +127,53 @@ func TestGithubReporterVerifyReturnsAPIError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestGithubReporterReturnsCreateAndCommentErrors(t *testing.T) {
+	tests := []struct {
+		name   string
+		search string
+	}{
+		{name: "create", search: `{"total_count":0,"items":[]}`},
+		{name: "comment", search: `{"total_count":1,"items":[{"number":7,"title":"spec/flaky_spec.rb","state":"open"}]}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/search/issues" {
+					_, _ = w.Write([]byte(tt.search))
+					return
+				}
+				http.Error(w, "write failed", http.StatusInternalServerError)
+			}))
+			defer server.Close()
+
+			err := githubTestReporter(t, server).ReportFlaky([]RspecExample{{Id: "spec/flaky_spec.rb[1:1]"}})
+			assert.Error(t, err)
+		})
+	}
+}
+
+func TestGithubReporterDoesNotReopenWhenDisabled(t *testing.T) {
+	reopened := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/search/issues":
+			_, _ = w.Write([]byte(`{"total_count":1,"items":[{"number":7,"title":"spec/flaky_spec.rb","state":"closed"}]}`))
+		case r.URL.Path == "/repos/owner/repo/issues/7/comments":
+			_, _ = w.Write([]byte(`{"id":1}`))
+		case r.URL.Path == "/repos/owner/repo/issues/7":
+			reopened = true
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	reporter := githubTestReporter(t, server)
+	reporter.config.Reopen = false
+	require.NoError(t, reporter.ReportFlaky([]RspecExample{{Id: "spec/flaky_spec.rb[1:1]"}}))
+	assert.False(t, reopened)
+}
+
 func githubTestReporter(t *testing.T, server *httptest.Server) *GithubReporter {
 	t.Helper()
 	client := github.NewClient(server.Client())

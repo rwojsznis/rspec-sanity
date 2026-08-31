@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -130,4 +131,26 @@ func TestRenderTemplateReturnsParseError(t *testing.T) {
 func TestCollectExamplesReturnsMissingFileError(t *testing.T) {
 	_, err := (&Config{PersistenceFile: filepath.Join(t.TempDir(), "missing.txt")}).CollectExamples()
 	assert.Error(t, err)
+}
+
+func TestCollectExamplesRejectsMalformedAndOversizedRows(t *testing.T) {
+	tests := []struct {
+		name    string
+		row     string
+		wantErr string
+	}{
+		{name: "malformed", row: "not a persistence row", wantErr: "malformed rspec persistence row"},
+		{name: "oversized", row: strings.Repeat("x", 70*1024), wantErr: "token too long"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "examples.txt")
+			contents := "example_id | status | run_time |\n-----------|--------|----------|\n" + tt.row + "\n"
+			require.NoError(t, os.WriteFile(path, []byte(contents), 0o600))
+
+			_, err := (&Config{PersistenceFile: path}).CollectExamples()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tt.wantErr)
+		})
+	}
 }

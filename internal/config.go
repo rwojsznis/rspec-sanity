@@ -109,6 +109,9 @@ func (c *Config) CollectExamples() ([]RspecExample, error) {
 		if line == "" {
 			continue
 		}
+		if len(strings.Split(line, "|")) < 2 {
+			return nil, fmt.Errorf("malformed rspec persistence row: %q", line)
+		}
 
 		examples = append(examples, ParseRspecExample(line))
 	}

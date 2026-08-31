@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -120,4 +121,15 @@ func TestRunnerReturnsPersistenceErrorAfterFailedFirstAttempt(t *testing.T) {
 	assert.Equal(t, 1, result.StatusCode)
 	assert.Error(t, result.Error)
 	assert.Contains(t, result.Error.Error(), "missing.txt")
+}
+
+func TestRunnerReturnsCommandStartupError(t *testing.T) {
+	runner := &Runner{Settings: &Settings{
+		SkipRerun: true,
+		Config:    Config{Command: filepath.Join(t.TempDir(), "missing-rspec")},
+	}}
+
+	result := runner.Run()
+	assert.Equal(t, 1, result.StatusCode)
+	assert.Error(t, result.Error)
 }

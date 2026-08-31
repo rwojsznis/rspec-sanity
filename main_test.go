@@ -94,6 +94,37 @@ template = "{{"
 	assert.Error(t, err)
 }
 
+func TestBinaryPropagatesRspecExitCodes(t *testing.T) {
+	binary := filepath.Join(t.TempDir(), "rspec-sanity")
+	build := exec.Command("go", "build", "-o", binary, ".")
+	buildOutput, err := build.CombinedOutput()
+	require.NoError(t, err, string(buildOutput))
+
+	tests := []struct {
+		name     string
+		command  string
+		wantCode int
+	}{
+		{name: "success", command: executable(t, "true"), wantCode: 0},
+		{name: "failure", command: executable(t, "false"), wantCode: 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := writeCLIConfig(t, tt.command, filepath.Join(t.TempDir(), "examples.txt"))
+			cmd := exec.Command(binary, "--config", config, "--skip-rerun", "run", "spec/models")
+			err := cmd.Run()
+
+			if tt.wantCode == 0 {
+				require.NoError(t, err)
+				return
+			}
+			var exitErr *exec.ExitError
+			require.ErrorAs(t, err, &exitErr)
+			assert.Equal(t, tt.wantCode, exitErr.ExitCode())
+		})
+	}
+}
+
 func executable(t *testing.T, name string) string {
 	t.Helper()
 	path, err := exec.LookPath(name)

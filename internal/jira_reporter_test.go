@@ -128,6 +128,31 @@ func TestJiraReporterVerifyReturnsAPIError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestJiraReporterReturnsCreateAndCommentErrors(t *testing.T) {
+	tests := []struct {
+		name   string
+		search string
+	}{
+		{name: "create", search: `{"issues":[],"total":0}`},
+		{name: "comment", search: `{"issues":[{"id":"1","key":"APP-1","fields":{"summary":"spec/flaky_spec.rb"}}],"total":1}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/rest/api/2/search" {
+					_, _ = w.Write([]byte(tt.search))
+					return
+				}
+				http.Error(w, "write failed", http.StatusInternalServerError)
+			}))
+			defer server.Close()
+
+			err := jiraTestReporter(t, server).ReportFlaky([]RspecExample{{Id: "spec/flaky_spec.rb[1:1]"}})
+			assert.Error(t, err)
+		})
+	}
+}
+
 func jiraTestReporter(t *testing.T, server *httptest.Server) *JiraReporter {
 	t.Helper()
 	config := &JiraConfig{
