@@ -8,7 +8,6 @@ import (
 	"log"
 
 	jira "github.com/andygrunwald/go-jira/v2/cloud"
-	"golang.org/x/exp/slices"
 )
 
 type JiraReporter struct {
@@ -91,9 +90,13 @@ func (jr *JiraReporter) ReportFlaky(flakies []RspecExample) error {
 		log.Println("No issues found, creating new one")
 		return jr.createIssue(flakies)
 	} else {
-		idx := slices.IndexFunc(issues, func(c jira.Issue) bool {
-			return c.Fields.Summary == flakies[0].Filename()
-		})
+		idx := -1
+		for i, issue := range issues {
+			if issue.Fields.Summary == flakies[0].Filename() {
+				idx = i
+				break
+			}
+		}
 
 		if idx == -1 {
 			log.Println("Can't find exact match, doing fallback")

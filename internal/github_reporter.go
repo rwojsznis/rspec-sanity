@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/google/go-github/v90/github"
-	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 )
 
@@ -84,9 +83,13 @@ func (gr *GithubReporter) ReportFlaky(flakies []RspecExample) error {
 		return gr.createIssue(flakies)
 	} else {
 
-		idx := slices.IndexFunc(results.Issues, func(c *github.Issue) bool {
-			return *c.Title == flakies[0].Filename()
-		})
+		idx := -1
+		for i, issue := range results.Issues {
+			if issue.GetTitle() == flakies[0].Filename() {
+				idx = i
+				break
+			}
+		}
 
 		if idx == -1 {
 			log.Println("[github] Can't find exact match, doing fallback")
@@ -106,7 +109,7 @@ func (gr *GithubReporter) addIssueComment(issue *github.Issue, flakies []RspecEx
 	}
 
 	comment := &github.IssueComment{
-		Body: github.String(body),
+		Body: &body,
 	}
 
 	_, _, err = gr.client.Issues.CreateComment(
@@ -121,14 +124,15 @@ func (gr *GithubReporter) addIssueComment(issue *github.Issue, flakies []RspecEx
 		return err
 	}
 
-	if gr.config.Reopen && *issue.State == *github.String("closed") {
+	if gr.config.Reopen && issue.GetState() == "closed" {
+		state := "open"
 		_, _, err = gr.client.Issues.Update(
 			context.Background(),
 			gr.config.Owner,
 			gr.config.Repo,
 			*issue.Number,
 			github.UpdateIssueRequest{
-				State: github.String("open"),
+				State: &state,
 			},
 		)
 
@@ -164,7 +168,7 @@ func (gr *GithubReporter) _createIssue(title string, body string, labels []strin
 
 	issue := github.CreateIssueRequest{
 		Title:  title,
-		Body:   github.String(body),
+		Body:   &body,
 		Labels: labels,
 	}
 

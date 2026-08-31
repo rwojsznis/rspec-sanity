@@ -27,13 +27,11 @@ func TestRunnerFirstRun(t *testing.T) {
 }
 
 func TestRunnerSecondRun(t *testing.T) {
-	tempFile, err := os.CreateTemp("", "config")
+	tempFile, err := os.CreateTemp(t.TempDir(), "config")
 	assert.NoError(t, err)
-	defer os.Remove(tempFile.Name())
 
-	scriptFile, err := os.CreateTemp("", "script")
+	scriptFile, err := os.CreateTemp(t.TempDir(), "script")
 	assert.NoError(t, err)
-	defer os.Remove(scriptFile.Name())
 
 	data := `#!/bin/bash
 if [ "$1" == "1" ]; then

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -14,9 +13,8 @@ func TestLoadConfig(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, `error reading config file from: "invalid" ("stat invalid: no such file or directory")`, err.Error())
 
-	tempFile, err := ioutil.TempFile("", "config")
+	tempFile, err := os.CreateTemp(t.TempDir(), "config")
 	assert.NoError(t, err)
-	defer os.Remove(tempFile.Name())
 
 	data := `
 command = "bundle exec rspec"
@@ -36,9 +34,8 @@ persistence_file = "spec/examples.txt"
 }
 
 func TestLoadConfigWithGithub(t *testing.T) {
-	tempFile, err := ioutil.TempFile("", "config")
+	tempFile, err := os.CreateTemp(t.TempDir(), "config")
 	assert.NoError(t, err)
-	defer os.Remove(tempFile.Name())
 
 	data := `
 command = "bundle exec rspec"
@@ -56,12 +53,7 @@ template = 'template string'
 	_, err = tempFile.Write([]byte(data))
 	assert.NoError(t, err)
 
-	originalToken := os.Getenv("RSPEC_SANITY_GITHUB_TOKEN")
-	os.Setenv("RSPEC_SANITY_GITHUB_TOKEN", "my-gh-token")
-
-	defer func() {
-		os.Setenv("RSPEC_SANITY_GITHUB_TOKEN", originalToken)
-	}()
+	t.Setenv("RSPEC_SANITY_GITHUB_TOKEN", "my-gh-token")
 
 	config, err := LoadConfig(tempFile.Name())
 	assert.NoError(t, err)
@@ -73,9 +65,8 @@ template = 'template string'
 }
 
 func TestLoadConfigWithJira(t *testing.T) {
-	tempFile, err := ioutil.TempFile("", "config")
+	tempFile, err := os.CreateTemp(t.TempDir(), "config")
 	assert.NoError(t, err)
-	defer os.Remove(tempFile.Name())
 
 	data := `
 command = "bundle exec rspec"
@@ -94,19 +85,9 @@ template = 'template string'
 	_, err = tempFile.Write([]byte(data))
 	assert.NoError(t, err)
 
-	originalToken := os.Getenv("RSPEC_SANITY_JIRA_TOKEN")
-	originalUser := os.Getenv("RSPEC_SANITY_JIRA_USER")
-	orginalHost := os.Getenv("RSPEC_SANITY_JIRA_HOST")
-
-	os.Setenv("RSPEC_SANITY_JIRA_TOKEN", "my-jira-token")
-	os.Setenv("RSPEC_SANITY_JIRA_USER", "my-jira-user")
-	os.Setenv("RSPEC_SANITY_JIRA_HOST", "my-jira-host")
-
-	defer func() {
-		os.Setenv("RSPEC_SANITY_JIRA_TOKEN", originalToken)
-		os.Setenv("RSPEC_SANITY_JIRA_USER", originalUser)
-		os.Setenv("RSPEC_SANITY_JIRA_HOST", orginalHost)
-	}()
+	t.Setenv("RSPEC_SANITY_JIRA_TOKEN", "my-jira-token")
+	t.Setenv("RSPEC_SANITY_JIRA_USER", "my-jira-user")
+	t.Setenv("RSPEC_SANITY_JIRA_HOST", "my-jira-host")
 
 	config, err := LoadConfig(tempFile.Name())
 	assert.NoError(t, err)
@@ -157,9 +138,8 @@ func TestRunCommand(t *testing.T) {
 }
 
 func TestCollectExamples(t *testing.T) {
-	tempFile, err := ioutil.TempFile("", "config")
+	tempFile, err := os.CreateTemp(t.TempDir(), "config")
 	assert.NoError(t, err)
-	defer os.Remove(tempFile.Name())
 
 	data := `example_id                       | status | run_time        |
 -------------------------------- | ------ | --------------- |
