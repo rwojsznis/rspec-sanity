@@ -1,3 +1,5 @@
+<img width="400" height="266" alt="rspec-sanity-logo" src="https://github.com/user-attachments/assets/456e26b6-c566-443b-bc96-2dc29b4af4bc" />
+
 # rspec-sanity
 [![GitHub Release](https://img.shields.io/github/v/release/rwojsznis/rspec-sanity)](https://github.com/rwojsznis/rspec-sanity/releases/latest)
 [![codecov](https://codecov.io/gh/rwojsznis/rspec-sanity/graph/badge.svg?token=70FFG3ZC0C)](https://codecov.io/gh/rwojsznis/rspec-sanity)
