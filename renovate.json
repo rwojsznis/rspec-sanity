@@ -18,14 +18,12 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update Go versions used by asdf and GitHub Actions.",
+      "description": "Update the Go version used by asdf.",
       "managerFilePatterns": [
-        "/^\\.tool-versions$/",
-        "/^\\.github/workflows/.*\\.ya?ml$/"
+        "/^\\.tool-versions$/"
       ],
       "matchStrings": [
-        "(?:^|\\n)go\\s+(?<currentValue>\\d+\\.\\d+(?:\\.\\d+)?)",
-        "go-version:\\s*[\"']?(?<currentValue>\\d+\\.\\d+(?:\\.\\d+)?)[\"']?"
+        "(?:^|\\n)go\\s+(?<currentValue>\\d+\\.\\d+(?:\\.\\d+)?)"
       ],
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "go",
@@ -48,11 +46,7 @@
     },
     {
       "description": "Update all Go toolchain declarations and images together.",
-      "matchDatasources": [
-        "golang-version",
-        "docker"
-      ],
-      "matchPackageNames": [
+      "matchDepNames": [
         "go",
         "golang"
       ],
