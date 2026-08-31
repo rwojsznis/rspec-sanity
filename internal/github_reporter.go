@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v90/github"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 )
@@ -28,7 +28,12 @@ func (gr *GithubReporter) Init() error {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
-	gr.client = github.NewClient(tc)
+	client, err := github.NewClient(github.WithHTTPClient(tc))
+	if err != nil {
+		return err
+	}
+
+	gr.client = client
 	return nil
 }
 
@@ -51,7 +56,7 @@ func (gr *GithubReporter) Verify() error {
 	}
 
 	log.Printf("[github] Created test issue: %s", *issue.HTMLURL)
-	
+
 	return nil
 }
 
@@ -117,12 +122,12 @@ func (gr *GithubReporter) addIssueComment(issue *github.Issue, flakies []RspecEx
 	}
 
 	if gr.config.Reopen && *issue.State == *github.String("closed") {
-		_, _, err = gr.client.Issues.Edit(
+		_, _, err = gr.client.Issues.Update(
 			context.Background(),
 			gr.config.Owner,
 			gr.config.Repo,
 			*issue.Number,
-			&github.IssueRequest{
+			github.UpdateIssueRequest{
 				State: github.String("open"),
 			},
 		)
@@ -157,10 +162,10 @@ func (gr *GithubReporter) _createIssue(title string, body string, labels []strin
 		labels = make([]string, 0)
 	}
 
-	issue := &github.IssueRequest{
-		Title:  github.String(title),
+	issue := github.CreateIssueRequest{
+		Title:  title,
 		Body:   github.String(body),
-		Labels: &labels,
+		Labels: labels,
 	}
 
 	newIssue, _, err := gr.client.Issues.Create(

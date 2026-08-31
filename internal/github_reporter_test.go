@@ -4,16 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v90/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGithubReporterCreatesIssueForNewFlakyFile(t *testing.T) {
-	var request github.IssueRequest
+	var request github.CreateIssueRequest
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/search/issues":
@@ -34,7 +33,7 @@ func TestGithubReporterCreatesIssueForNewFlakyFile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "spec/flaky_spec.rb", request.GetTitle())
 	assert.Contains(t, request.GetBody(), "spec/flaky_spec.rb[1:1]")
-	assert.Equal(t, []string{"flaky"}, *request.Labels)
+	assert.Equal(t, []string{"flaky"}, request.Labels)
 }
 
 func TestGithubReporterCommentsOnAndReopensClosedIssue(t *testing.T) {
@@ -96,7 +95,7 @@ func TestGithubReporterReturnsSearchError(t *testing.T) {
 }
 
 func TestGithubReporterInitAndVerify(t *testing.T) {
-	var request github.IssueRequest
+	var request github.CreateIssueRequest
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
 		_, _ = w.Write([]byte(`{"number":7,"title":"Test Issue","html_url":"https://example.com/issues/7"}`))
@@ -107,10 +106,7 @@ func TestGithubReporterInitAndVerify(t *testing.T) {
 		Owner: "owner", Repo: "repo", Template: `{{range .Examples}}{{.Id}} {{end}}`, token: "token",
 	})
 	require.NoError(t, reporter.Init())
-	baseURL, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-	reporter.client.BaseURL = baseURL
-	reporter.client.UploadURL = baseURL
+	reporter.client = githubTestClient(t, server)
 
 	require.NoError(t, reporter.Verify())
 	assert.Equal(t, "Test Issue", request.GetTitle())
@@ -176,12 +172,6 @@ func TestGithubReporterDoesNotReopenWhenDisabled(t *testing.T) {
 
 func githubTestReporter(t *testing.T, server *httptest.Server) *GithubReporter {
 	t.Helper()
-	client := github.NewClient(server.Client())
-	baseURL, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-	client.BaseURL = baseURL
-	client.UploadURL = baseURL
-
 	return &GithubReporter{
 		config: &GithubConfig{
 			Owner:    "owner",
@@ -189,6 +179,17 @@ func githubTestReporter(t *testing.T, server *httptest.Server) *GithubReporter {
 			Labels:   []string{"flaky"},
 			Template: `Flaky examples:{{range .Examples}} {{.Id}}{{end}}`,
 		},
-		client: client,
+		client: githubTestClient(t, server),
 	}
+}
+
+func githubTestClient(t *testing.T, server *httptest.Server) *github.Client {
+	t.Helper()
+	baseURL := server.URL + "/"
+	client, err := github.NewClient(
+		github.WithHTTPClient(server.Client()),
+		github.WithURLs(&baseURL, &baseURL),
+	)
+	require.NoError(t, err)
+	return client
 }
