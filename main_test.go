@@ -77,6 +77,23 @@ func TestVerifyCommandUsesConfiguredReporter(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestVerifyCommandReturnsReporterTemplateError(t *testing.T) {
+	t.Setenv("RSPEC_SANITY_GITHUB_TOKEN", "token")
+	path := filepath.Join(t.TempDir(), "config.toml")
+	contents := `
+command = "rspec"
+persistence_file = "examples.txt"
+[github]
+owner = "owner"
+repo = "repo"
+template = "{{"
+`
+	require.NoError(t, os.WriteFile(path, []byte(contents), 0o600))
+
+	err := newApp(func(int) {}).Run([]string{"rspec-sanity", "--config", path, "verify"})
+	assert.Error(t, err)
+}
+
 func executable(t *testing.T, name string) string {
 	t.Helper()
 	path, err := exec.LookPath(name)

@@ -72,6 +72,39 @@ func TestReporterConfigValidation(t *testing.T) {
 	}
 }
 
+func TestGithubConfigRequiresToken(t *testing.T) {
+	t.Setenv("RSPEC_SANITY_GITHUB_TOKEN", "temporary")
+	require.NoError(t, os.Unsetenv("RSPEC_SANITY_GITHUB_TOKEN"))
+	config := GithubConfig{Owner: "owner", Repo: "repo", Template: "template"}
+
+	assert.EqualError(t, config.Prepare(), "specify github token under RSPEC_SANITY_GITHUB_TOKEN env")
+}
+
+func TestJiraConfigRequiresCredentials(t *testing.T) {
+	valid := JiraConfig{EpicId: "EPIC-1", ProjectId: "APP", TaskTypeId: "10001", Template: "template"}
+
+	t.Run("token", func(t *testing.T) {
+		t.Setenv("RSPEC_SANITY_JIRA_TOKEN", "temporary")
+		require.NoError(t, os.Unsetenv("RSPEC_SANITY_JIRA_TOKEN"))
+		assert.EqualError(t, valid.Prepare(), "specify jira token under RSPEC_SANITY_JIRA_TOKEN env")
+	})
+
+	t.Run("user", func(t *testing.T) {
+		t.Setenv("RSPEC_SANITY_JIRA_TOKEN", "token")
+		t.Setenv("RSPEC_SANITY_JIRA_USER", "temporary")
+		require.NoError(t, os.Unsetenv("RSPEC_SANITY_JIRA_USER"))
+		assert.EqualError(t, valid.Prepare(), "specify jira user under RSPEC_SANITY_JIRA_USER env")
+	})
+
+	t.Run("host", func(t *testing.T) {
+		t.Setenv("RSPEC_SANITY_JIRA_TOKEN", "token")
+		t.Setenv("RSPEC_SANITY_JIRA_USER", "user")
+		t.Setenv("RSPEC_SANITY_JIRA_HOST", "temporary")
+		require.NoError(t, os.Unsetenv("RSPEC_SANITY_JIRA_HOST"))
+		assert.EqualError(t, valid.Prepare(), "specify jira full host (including scheme) under RSPEC_SANITY_JIRA_HOST env")
+	})
+}
+
 func TestSettingsLoadAndValidate(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.toml")
 	require.NoError(t, os.WriteFile(path, []byte("command = \"rspec\"\npersistence_file = \"examples.txt\"\n"), 0o600))
@@ -91,5 +124,10 @@ func TestSettingsLoadAndValidate(t *testing.T) {
 
 func TestRenderTemplateReturnsParseError(t *testing.T) {
 	_, err := RenderTemplate("{{", nil)
+	assert.Error(t, err)
+}
+
+func TestCollectExamplesReturnsMissingFileError(t *testing.T) {
+	_, err := (&Config{PersistenceFile: filepath.Join(t.TempDir(), "missing.txt")}).CollectExamples()
 	assert.Error(t, err)
 }

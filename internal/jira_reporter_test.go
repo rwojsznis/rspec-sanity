@@ -72,6 +72,26 @@ func TestJiraReporterCommentsOnExactExistingIssue(t *testing.T) {
 	assert.Contains(t, comment.Body, "spec/flaky_spec.rb[1:2]")
 }
 
+func TestJiraReporterFallsBackToFirstSearchResult(t *testing.T) {
+	commented := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/rest/api/2/search":
+			_, _ = w.Write([]byte(`{"issues":[{"id":"1","key":"APP-1","fields":{"summary":"similar issue"}}],"total":1}`))
+		case "/rest/api/2/issue/1/comment":
+			commented = true
+			_, _ = w.Write([]byte(`{"id":"2"}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	err := jiraTestReporter(t, server).ReportFlaky([]RspecExample{{Id: "spec/flaky_spec.rb[1:1]"}})
+	require.NoError(t, err)
+	assert.True(t, commented)
+}
+
 func TestJiraReporterReturnsSearchError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, "unavailable", http.StatusServiceUnavailable)
@@ -96,6 +116,16 @@ func TestJiraReporterVerifyCreatesTestIssue(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "Test Issue", created.Fields.Summary)
 	assert.Contains(t, created.Fields.Description, "some/test-example.rb:1:2")
+}
+
+func TestJiraReporterVerifyReturnsAPIError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "unavailable", http.StatusServiceUnavailable)
+	}))
+	defer server.Close()
+
+	err := jiraTestReporter(t, server).Verify()
+	assert.Error(t, err)
 }
 
 func jiraTestReporter(t *testing.T, server *httptest.Server) *JiraReporter {

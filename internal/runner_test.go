@@ -107,3 +107,17 @@ func TestRunnerCanSkipRerun(t *testing.T) {
 	assert.Error(t, result.Error)
 	assert.False(t, result.HasFlakies())
 }
+
+func TestRunnerReturnsPersistenceErrorAfterFailedFirstAttempt(t *testing.T) {
+	command, err := exec.LookPath("false")
+	require.NoError(t, err)
+	runner := &Runner{Settings: &Settings{Config: Config{
+		Command:         command,
+		PersistenceFile: fmt.Sprintf("%s/missing.txt", t.TempDir()),
+	}}}
+
+	result := runner.Run()
+	assert.Equal(t, 1, result.StatusCode)
+	assert.Error(t, result.Error)
+	assert.Contains(t, result.Error.Error(), "missing.txt")
+}

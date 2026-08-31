@@ -65,6 +65,26 @@ func TestGithubReporterCommentsOnAndReopensClosedIssue(t *testing.T) {
 	assert.True(t, reopened)
 }
 
+func TestGithubReporterFallsBackToFirstSearchResult(t *testing.T) {
+	commented := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/search/issues":
+			_, _ = w.Write([]byte(`{"total_count":1,"items":[{"number":7,"title":"similar issue","state":"open"}]}`))
+		case "/repos/owner/repo/issues/7/comments":
+			commented = true
+			_, _ = w.Write([]byte(`{"id":1}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	err := githubTestReporter(t, server).ReportFlaky([]RspecExample{{Id: "spec/flaky_spec.rb[1:1]"}})
+	require.NoError(t, err)
+	assert.True(t, commented)
+}
+
 func TestGithubReporterReturnsSearchError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, "unavailable", http.StatusServiceUnavailable)
@@ -95,6 +115,16 @@ func TestGithubReporterInitAndVerify(t *testing.T) {
 	require.NoError(t, reporter.Verify())
 	assert.Equal(t, "Test Issue", request.GetTitle())
 	assert.Contains(t, request.GetBody(), "some/test-example.rb:1:2")
+}
+
+func TestGithubReporterVerifyReturnsAPIError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "unavailable", http.StatusServiceUnavailable)
+	}))
+	defer server.Close()
+
+	err := githubTestReporter(t, server).Verify()
+	assert.Error(t, err)
 }
 
 func githubTestReporter(t *testing.T, server *httptest.Server) *GithubReporter {
