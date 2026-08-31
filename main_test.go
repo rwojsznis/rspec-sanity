@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,7 +16,7 @@ func TestRunCommandExitsWithSuccessfulRspecStatus(t *testing.T) {
 	config := writeCLIConfig(t, executable(t, "true"), filepath.Join(t.TempDir(), "examples.txt"))
 	exitCode := -1
 
-	err := newApp(func(code int) { exitCode = code }).Run([]string{
+	err := newApp(func(code int) { exitCode = code }).Run(context.Background(), []string{
 		"rspec-sanity", "--config", config, "run", "spec/models",
 	})
 
@@ -27,7 +28,7 @@ func TestRunCommandPropagatesFailedRspecStatusWhenRerunIsSkipped(t *testing.T) {
 	config := writeCLIConfig(t, executable(t, "false"), filepath.Join(t.TempDir(), "examples.txt"))
 	exitCode := -1
 
-	err := newApp(func(code int) { exitCode = code }).Run([]string{
+	err := newApp(func(code int) { exitCode = code }).Run(context.Background(), []string{
 		"rspec-sanity", "--config", config, "--skip-rerun", "run", "spec/models",
 	})
 
@@ -52,7 +53,7 @@ exit 0
 	config := writeCLIConfig(t, fmt.Sprintf("%s %s", scriptFile, persistenceFile), persistenceFile)
 	exitCode := -1
 
-	err := newApp(func(code int) { exitCode = code }).Run([]string{
+	err := newApp(func(code int) { exitCode = code }).Run(context.Background(), []string{
 		"rspec-sanity", "--config", config, "run", "spec/models",
 	})
 
@@ -63,17 +64,17 @@ exit 0
 func TestRunCommandValidatesArgumentsAndConfig(t *testing.T) {
 	config := writeCLIConfig(t, executable(t, "true"), filepath.Join(t.TempDir(), "examples.txt"))
 
-	err := newApp(func(int) {}).Run([]string{"rspec-sanity", "--config", config, "run"})
+	err := newApp(func(int) {}).Run(context.Background(), []string{"rspec-sanity", "--config", config, "run"})
 	assert.EqualError(t, err, "no test files or directories specified")
 
-	err = newApp(func(int) {}).Run([]string{"rspec-sanity", "--config", "missing.toml", "run", "spec"})
+	err = newApp(func(int) {}).Run(context.Background(), []string{"rspec-sanity", "--config", "missing.toml", "run", "spec"})
 	assert.Error(t, err)
 }
 
 func TestVerifyCommandUsesConfiguredReporter(t *testing.T) {
 	config := writeCLIConfig(t, executable(t, "true"), filepath.Join(t.TempDir(), "examples.txt"))
 
-	err := newApp(func(int) {}).Run([]string{"rspec-sanity", "--config", config, "verify"})
+	err := newApp(func(int) {}).Run(context.Background(), []string{"rspec-sanity", "--config", config, "verify"})
 	assert.NoError(t, err)
 }
 
@@ -90,7 +91,7 @@ template = "{{"
 `
 	require.NoError(t, os.WriteFile(path, []byte(contents), 0o600))
 
-	err := newApp(func(int) {}).Run([]string{"rspec-sanity", "--config", path, "verify"})
+	err := newApp(func(int) {}).Run(context.Background(), []string{"rspec-sanity", "--config", path, "verify"})
 	assert.Error(t, err)
 }
 
