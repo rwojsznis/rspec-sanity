@@ -151,12 +151,12 @@ func TestGithubReporterReturnsCreateAndCommentErrors(t *testing.T) {
 func TestGithubReporterDoesNotReopenWhenDisabled(t *testing.T) {
 	reopened := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.URL.Path == "/search/issues":
+		switch r.URL.Path {
+		case "/search/issues":
 			_, _ = w.Write([]byte(`{"total_count":1,"items":[{"number":7,"title":"spec/flaky_spec.rb","state":"closed"}]}`))
-		case r.URL.Path == "/repos/owner/repo/issues/7/comments":
+		case "/repos/owner/repo/issues/7/comments":
 			_, _ = w.Write([]byte(`{"id":1}`))
-		case r.URL.Path == "/repos/owner/repo/issues/7":
+		case "/repos/owner/repo/issues/7":
 			reopened = true
 		default:
 			http.NotFound(w, r)

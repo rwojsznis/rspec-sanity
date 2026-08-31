@@ -94,7 +94,7 @@ func (c *Config) CollectExamples() ([]RspecExample, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	var examples []RspecExample
 
