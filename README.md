@@ -1,4 +1,7 @@
 # rspec-sanity
+[![GitHub Release](https://img.shields.io/github/v/release/rwojsznis/rspec-sanity)](https://github.com/rwojsznis/rspec-sanity/releases/latest)
+[![codecov](https://codecov.io/gh/rwojsznis/rspec-sanity/graph/badge.svg?token=70FFG3ZC0C)](https://codecov.io/gh/rwojsznis/rspec-sanity)
+[![CI](https://github.com/rwojsznis/rspec-sanity/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/rwojsznis/rspec-sanity/actions/workflows/test.yml?query=branch%3Amain)
 
 Flaky tests reporter that wraps your `rspec` call designed for the CI systems. [See this repo for a fully-working example](https://github.com/rwojsznis/rspec-sanity-example/).
 
