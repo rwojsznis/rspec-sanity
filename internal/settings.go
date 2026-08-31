@@ -1,12 +1,6 @@
 package internal
 
-import (
-	// "fmt"
-
-	"fmt"
-
-	"github.com/urfave/cli/v2"
-)
+import "fmt"
 
 type Settings struct {
 	SkipRerun  bool
@@ -15,8 +9,7 @@ type Settings struct {
 	Pattern    []string
 }
 
-func (s *Settings) Load(cCtx *cli.Context) error {
-	pattern := cCtx.Args().Slice()
+func (s *Settings) Load(pattern []string) error {
 	s.Pattern = pattern
 
 	config, err := LoadConfig(s.ConfigPath)

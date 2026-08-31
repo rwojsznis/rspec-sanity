@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/urfave/cli/v2"
 )
 
 func TestLoadConfigRejectsInvalidConfiguration(t *testing.T) {
@@ -110,11 +108,9 @@ func TestSettingsLoadAndValidate(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.toml")
 	require.NoError(t, os.WriteFile(path, []byte("command = \"rspec\"\npersistence_file = \"examples.txt\"\n"), 0o600))
 
-	set := flag.NewFlagSet("test", flag.ContinueOnError)
-	require.NoError(t, set.Parse([]string{"spec/models", "spec/services"}))
 	settings := Settings{ConfigPath: path}
 
-	require.NoError(t, settings.Load(cli.NewContext(nil, set, nil)))
+	require.NoError(t, settings.Load([]string{"spec/models", "spec/services"}))
 	assert.Equal(t, []string{"spec/models", "spec/services"}, settings.Pattern)
 	assert.Equal(t, "rspec", settings.Config.Command)
 	assert.NoError(t, settings.Validate())

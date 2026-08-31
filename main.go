@@ -1,23 +1,24 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
 	internal "github.com/rwojsznis/rspec-sanity/internal"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	if err := newApp(os.Exit).Run(os.Args); err != nil {
+	if err := newApp(os.Exit).Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func newApp(exit func(int)) *cli.App {
+func newApp(exit func(int)) *cli.Command {
 	settings := internal.Settings{}
 
-	return &cli.App{
+	return &cli.Command{
 		Usage:     "a tool that helps you to ticket flaky tests in your RSpec suite",
 		ArgsUsage: "[test files or directories]",
 		Flags: []cli.Flag{
@@ -38,8 +39,8 @@ func newApp(exit func(int)) *cli.App {
 			{
 				Name:  "verify",
 				Usage: "verify configuration - will try to add a test issue report to Jira/Github",
-				Action: func(cCtx *cli.Context) error {
-					err := settings.Load(cCtx)
+				Action: func(_ context.Context, cmd *cli.Command) error {
+					err := settings.Load(cmd.Args().Slice())
 					if err != nil {
 						return err
 					}
@@ -56,8 +57,8 @@ func newApp(exit func(int)) *cli.App {
 			{
 				Name:  "run",
 				Usage: "run rspec according to the configuration",
-				Action: func(cCtx *cli.Context) error {
-					err := settings.Load(cCtx)
+				Action: func(_ context.Context, cmd *cli.Command) error {
+					err := settings.Load(cmd.Args().Slice())
 					if err != nil {
 						return err
 					}
