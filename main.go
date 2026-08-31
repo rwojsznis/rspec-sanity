@@ -9,9 +9,15 @@ import (
 )
 
 func main() {
+	if err := newApp(os.Exit).Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func newApp(exit func(int)) *cli.App {
 	settings := internal.Settings{}
 
-	app := &cli.App{
+	return &cli.App{
 		Usage:     "a tool that helps you to ticket flaky tests in your RSpec suite",
 		ArgsUsage: "[test files or directories]",
 		Flags: []cli.Flag{
@@ -43,7 +49,7 @@ func main() {
 					if err != nil {
 						return err
 					}
-					
+
 					return reporter.Verify()
 				},
 			},
@@ -88,14 +94,10 @@ func main() {
 					}
 
 					// if nothing failed during reporting - propagate exit code from rspec
-					os.Exit(runnerStatus.StatusCode)
+					exit(runnerStatus.StatusCode)
 					return nil
 				},
 			},
 		},
-	}
-
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
 	}
 }

@@ -29,6 +29,9 @@ func LoadConfig(path string) (*Config, error) {
 
 	config := &Config{}
 	_, err = toml.DecodeFile(path, &config)
+	if err != nil {
+		return nil, err
+	}
 
 	if config.Command == "" {
 		return nil, fmt.Errorf("no rspec command specified in config")

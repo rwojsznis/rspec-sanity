@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,6 +9,17 @@ import (
 
 type MockReporter struct {
 	Groups map[string][]RspecExample
+}
+
+type ErrorReporter struct {
+	calls int
+}
+
+func (m *ErrorReporter) Init() error   { return nil }
+func (m *ErrorReporter) Verify() error { return nil }
+func (m *ErrorReporter) ReportFlaky([]RspecExample) error {
+	m.calls++
+	return errors.New("report failed")
 }
 
 func (m *MockReporter) Init() error {
@@ -36,7 +48,7 @@ func TestReportFlakies(t *testing.T) {
 		{Id: "./spec/flaky_spec.rb[1:3]"},
 		{Id: "./spec/new_flaky_spec.rb[1:1]"},
 	})
- 
+
 	assert.NoError(t, err)
 
 	assert.Equal(t, 2, len(reporter.Groups))
@@ -46,4 +58,15 @@ func TestReportFlakies(t *testing.T) {
 
 	assert.Equal(t, 1, len(reporter.Groups["./spec/new_flaky_spec.rb"]))
 	assert.Equal(t, "./spec/new_flaky_spec.rb[1:1]", reporter.Groups["./spec/new_flaky_spec.rb"][0].Id)
+}
+
+func TestReportFlakiesStopsWhenReporterFails(t *testing.T) {
+	reporter := &ErrorReporter{}
+	err := ReportFlakies(reporter, []RspecExample{
+		{Id: "spec/first_spec.rb[1:1]"},
+		{Id: "spec/second_spec.rb[1:1]"},
+	})
+
+	assert.EqualError(t, err, "report failed")
+	assert.Equal(t, 1, reporter.calls)
 }
