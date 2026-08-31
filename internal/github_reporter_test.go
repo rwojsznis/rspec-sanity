@@ -75,6 +75,28 @@ func TestGithubReporterReturnsSearchError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestGithubReporterInitAndVerify(t *testing.T) {
+	var request github.IssueRequest
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&request))
+		_, _ = w.Write([]byte(`{"number":7,"title":"Test Issue","html_url":"https://example.com/issues/7"}`))
+	}))
+	defer server.Close()
+
+	reporter := NewGithubReporter(&GithubConfig{
+		Owner: "owner", Repo: "repo", Template: `{{range .Examples}}{{.Id}} {{end}}`, token: "token",
+	})
+	require.NoError(t, reporter.Init())
+	baseURL, err := url.Parse(server.URL + "/")
+	require.NoError(t, err)
+	reporter.client.BaseURL = baseURL
+	reporter.client.UploadURL = baseURL
+
+	require.NoError(t, reporter.Verify())
+	assert.Equal(t, "Test Issue", request.GetTitle())
+	assert.Contains(t, request.GetBody(), "some/test-example.rb:1:2")
+}
+
 func githubTestReporter(t *testing.T, server *httptest.Server) *GithubReporter {
 	t.Helper()
 	client := github.NewClient(server.Client())
