@@ -15,7 +15,50 @@
   "github-actions": {
     "enabled": true
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Go versions used by asdf and GitHub Actions.",
+      "managerFilePatterns": [
+        "/^\\.tool-versions$/",
+        "/^\\.github/workflows/.*\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)go\\s+(?<currentValue>\\d+\\.\\d+(?:\\.\\d+)?)",
+        "go-version:\\s*[\"']?(?<currentValue>\\d+\\.\\d+(?:\\.\\d+)?)[\"']?"
+      ],
+      "datasourceTemplate": "golang-version",
+      "depNameTemplate": "go",
+      "versioningTemplate": "semver"
+    }
+  ],
   "packageRules": [
+    {
+      "description": "Update the Go version declared in go.mod.",
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepNames": [
+        "go"
+      ],
+      "matchDepTypes": [
+        "golang"
+      ],
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "Update all Go toolchain declarations and images together.",
+      "matchDatasources": [
+        "golang-version",
+        "docker"
+      ],
+      "matchPackageNames": [
+        "go",
+        "golang"
+      ],
+      "groupName": "Go toolchain",
+      "groupSlug": "go-toolchain"
+    },
     {
       "description": "Automerge non-major dependency updates after required CI checks pass.",
       "matchUpdateTypes": [
