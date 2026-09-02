@@ -1,6 +1,6 @@
 module github.com/rwojsznis/rspec-sanity
 
-go 1.27.0
+go 1.27.1
 
 require (
 	github.com/BurntSushi/toml v1.6.0
@@ -8,7 +8,6 @@ require (
 	github.com/google/go-github/v90 v90.0.0
 	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli/v3 v3.11.0
-	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
 	golang.org/x/oauth2 v0.36.0
 )
 
