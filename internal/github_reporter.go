@@ -108,8 +108,8 @@ func (gr *GithubReporter) addIssueComment(issue *github.Issue, flakies []RspecEx
 		return err
 	}
 
-	comment := &github.IssueComment{
-		Body: &body,
+	comment := github.IssueCommentRequest{
+		Body: body,
 	}
 
 	_, _, err = gr.client.Issues.CreateComment(
