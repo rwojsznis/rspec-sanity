@@ -7,7 +7,7 @@ require (
 	github.com/andygrunwald/go-jira/v2 v2.0.0-20260614144923-204ada8a4252
 	github.com/google/go-github/v92 v92.0.0
 	github.com/stretchr/testify v1.12.1
-	github.com/urfave/cli/v3 v3.12.0
+	github.com/urfave/cli/v3 v3.13.0
 	golang.org/x/oauth2 v0.37.0
 )
 
