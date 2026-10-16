@@ -1,7 +1,7 @@
 github.com/BurntSushi/toml v1.6.0 h1:dRaEfpa2VI55EwlIW72hMRHdWouJeRF7TPYhI+AUQjk=
 github.com/BurntSushi/toml v1.6.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
-github.com/andygrunwald/go-jira/v2 v2.0.0-20260614144923-204ada8a4252 h1:dTIH5CUuLcpBt8CpooSRvnT+FhzZPbzKCenXZ8vzu/A=
-github.com/andygrunwald/go-jira/v2 v2.0.0-20260614144923-204ada8a4252/go.mod h1:iJN0Xoo8/6ZRrANYLVXg77qdhn3a/TUIdLLgTxLaoII=
+github.com/andygrunwald/go-jira/v2 v2.0.0-20261016072037-1bd74eb708be h1:nMShd6K50sSJs5gPn7Q4SxFLeUbTGH/+JqgTWfi1H7k=
+github.com/andygrunwald/go-jira/v2 v2.0.0-20261016072037-1bd74eb708be/go.mod h1:iJN0Xoo8/6ZRrANYLVXg77qdhn3a/TUIdLLgTxLaoII=
 github.com/fatih/structs v1.1.0 h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
 github.com/golang-jwt/jwt/v4 v4.5.2 h1:YtQM7lnr8iZ+j5q71MGKkNw9Mn7AjHM68uc9g5fXeUI=
